@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time K-mer Plot</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <canvas id="kmerChart" width="800" height="400"></canvas>
+    <script>
+        const ctx = document.getElementById('kmerChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Unique K-mers vs Reads',
+                    data: [],
+                    borderColor: 'rgb(255, 99, 132)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        const socket = new WebSocket('ws://127.0.0.1:3030/ws');
+
+        socket.onmessage = function(event) {
+            const [reads, kmers] = event.data.split(' ').map(Number);
+            chart.data.labels.push(reads);
+            chart.data.datasets[0].data.push(kmers);
+            chart.update();
+        };
+    </script>
+</body>
+</html>
